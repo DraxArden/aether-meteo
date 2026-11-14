@@ -1,5 +1,5 @@
 /* Aether Meteo – service worker: offline app shell + last weather data */
-const VERSION = 'aether-v2';
+const VERSION = 'aether-v3';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 const LIBS = /cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com/;
 const DATA = /open-meteo\.com|api\.rainviewer\.com|raw\.githubusercontent\.com|api\.github\.com/;
@@ -16,11 +16,15 @@ self.addEventListener('fetch', e => {
   const url = req.url;
   /* app pages: network first, fall back to cache */
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).then(r => { const copy = r.clone(); caches.open(VERSION).then(c => c.put('./index.html', copy)); return r; })
+    e.respondWith(fetch(req.url, {cache:'no-cache', credentials:'same-origin'}).then(r => { const copy = r.clone(); caches.open(VERSION).then(c => c.put('./index.html', copy)); return r; })
       .catch(() => caches.match('./index.html')));
     return;
   }
   /* libraries and fonts: cache first */
+  if (url.startsWith(self.location.origin) && /\/(index\.html)?$/.test(new URL(url).pathname)) {
+    e.respondWith(fetch(url, {cache:'no-cache'}).catch(() => caches.match('./index.html')));
+    return;
+  }
   if (LIBS.test(url) || url.startsWith(self.location.origin)) {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(r => { const copy = r.clone(); caches.open(VERSION).then(c => c.put(req, copy)); return r; })));
     return;

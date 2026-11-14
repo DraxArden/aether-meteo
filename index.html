@@ -1059,7 +1059,7 @@ select.msel{height:34px;border-radius:8px;border:1px solid var(--border-2);backg
   <footer>
     Dati: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0), che rielabora i modelli dei servizi meteorologici nazionali (ECMWF, DWD, NOAA, Météo-France, ItaliaMeteo-ARPAE, UK Met Office e altri). Verifica storica rispetto alla rianalisi ERA5 (Copernicus).
     Allerte: bollettino di criticità della <a href="https://github.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica" target="_blank" rel="noopener">Protezione Civile</a> (CC BY 4.0). Mappe: DWD; radar: RainViewer.
-    Aether Meteo: il consenso è una media pesata in base all'errore recente di ogni modello in questa località. Prototipo, non per decisioni critiche.
+    <b>Versione 3</b> · 14 novembre 2026. Aether Meteo: il consenso è una media pesata in base all'errore recente di ogni modello in questa località. Prototipo, non per decisioni critiche.
   </footer>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -2286,7 +2286,11 @@ async function showAlertLayer(){
   let deferred = null;
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; $('installBtn').style.display = ''; });
   $('installBtn').onclick = async () => { if(!deferred) return; deferred.prompt(); try { await deferred.userChoice; } catch(e){} deferred = null; $('installBtn').style.display = 'none'; };
-  if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+    navigator.serviceWorker.register('sw.js', {updateViaCache:'none'}).then(r => r.update()).catch(()=>{});
+    let reloaded = false; const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if(hadController && !reloaded){ reloaded = true; location.reload(); } });
+  }
   window.addEventListener('online', () => { if(S.offline) loadAll(S.loc); });
   if(new Date().getHours() >= 18){ S.actDay = 1; document.querySelectorAll('#actSeg button').forEach(x=>x.classList.toggle('on', x.dataset.d==='1')); }
   if(location.hash === '#demo') { $('place').textContent = loc.name; S.loc = loc; startDemo(loc); }
