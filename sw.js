@@ -1,5 +1,5 @@
 /* Aether Meteo – service worker: offline app shell + last weather data */
-const VERSION = 'aether-v1';
+const VERSION = 'aether-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 const LIBS = /cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com/;
 const DATA = /open-meteo\.com|api\.rainviewer\.com|raw\.githubusercontent\.com|api\.github\.com/;

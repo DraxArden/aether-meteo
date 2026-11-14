@@ -46,7 +46,9 @@ header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14p
 .sugg div:hover,.sugg div.on{background:var(--card-2)}
 .sugg small{color:var(--text-3)}
 .spacer{flex:1}
-.seg{display:flex;border:1px solid var(--border-2);border-radius:var(--radius);overflow:hidden;background:var(--card)}
+.seg{display:flex;border:1px solid var(--border-2);border-radius:var(--radius);overflow-x:auto;overflow-y:hidden;background:var(--card);max-width:100%;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.seg::-webkit-scrollbar{display:none}
+.seg button{flex:none;white-space:nowrap}
 .seg button{border:0;background:transparent;padding:8px 13px;cursor:pointer;font-size:13.5px;color:var(--text-2)}
 .seg button.on{background:var(--accent-bg);color:var(--accent);font-weight:500}
 .iconbtn{height:38px;width:38px;border-radius:var(--radius);border:1px solid var(--border-2);background:var(--card);cursor:pointer;display:grid;place-items:center;color:var(--text-2)}
@@ -211,6 +213,51 @@ body.simple .expert-only{display:none!important}
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:13.5px;opacity:0;transition:.25s;z-index:60;pointer-events:none;max-width:90vw}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 @media (max-width:900px){ .summary{flex-direction:column} .nowBox{width:auto;border-left:0;border-top:1px solid var(--border);padding:12px 0 0} .trow{grid-template-columns:1fr 1fr;} .trow .tv{text-align:left} }
+
+.mapctrls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-width:0;max-width:100%}
+.maphint{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);color:#fff;font-size:15px;font-weight:500;z-index:700;pointer-events:none;border-radius:10px;text-align:center;padding:20px}
+.maphint.on{display:flex}
+html,body{max-width:100%;overflow-x:hidden}
+@media (max-width:640px){
+  .wrap{padding:10px 12px 32px}
+  header{gap:10px}
+  .logo{font-size:17px}
+  .search{order:5;flex:1 1 100%;max-width:none;min-width:0}
+  .search input{font-size:16px}
+  .spacer{display:none}
+  .seg button{padding:7px 11px;font-size:13px}
+  .status{gap:6px}
+  .status .place{font-size:20px;flex-basis:auto}
+  .status .pill{font-size:11px;padding:2px 8px}
+  #pEns,#pSkill{display:none}
+  .card{padding:14px}
+  .card .hd{flex-direction:column;align-items:stretch;gap:8px}
+  .card .hd > .seg,.card .hd > .mapctrls,.card .hd .mapctrls > .seg{width:100%}
+  .card .hd .note{font-size:12px}
+  .mapctrls .msel{flex:1 1 40%;min-width:0}
+  .mapctrls .duelw{flex:1 1 100%}
+  #map{height:340px}
+  .mapctl{gap:8px}
+  .mapctl input[type=range]{min-width:0;flex:1 1 60%}
+  .maptime{min-width:0;flex:1 1 100%;font-size:12px;order:3}
+  .days{display:flex;overflow-x:auto;gap:8px;scroll-snap-type:x mandatory;padding-bottom:4px;margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px;scrollbar-width:none}
+  .days::-webkit-scrollbar{display:none}
+  .day{flex:0 0 74px;scroll-snap-align:start}
+  .summary{padding:14px}
+  .sumT{font-size:15px}
+  .hero-temp{font-size:40px}
+  .chartbox{height:250px}
+  .chartbox.sm{height:220px}
+  .legend{font-size:11px;gap:4px 10px}
+  .trow{grid-template-columns:1fr 1fr;font-size:12.5px}
+  .rank{grid-template-columns:96px 1fr 50px;font-size:12px}
+  table{font-size:12px}
+  td,th{padding:6px 5px}
+  .lgticks{font-size:10.5px}
+  .act .an{font-size:13px}
+  .duelbar span{font-size:11px}
+  footer{font-size:11.5px}
+}
 footer{margin-top:22px;font-size:12px;color:var(--text-3);line-height:1.6}
 footer a{color:var(--text-2)}
 .scroll-x{overflow-x:auto}
@@ -951,14 +998,14 @@ select.msel{height:34px;border-radius:8px;border:1px solid var(--border-2);backg
   <div class="card" style="margin-bottom:12px">
     <div class="hd">
       <h3>Mappa</h3>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <div class="mapctrls">
         <select class="msel" id="mapBase" aria-label="Sfondo della mappa"><option value="esri">Sfondo: grigio</option><option value="street">Sfondo: stradale</option><option value="sat">Sfondo: satellite</option><option value="topo">Sfondo: rilievo</option></select>
         <select class="msel" id="mapModel" aria-label="Modello per la mappa"><option value="icon">ICON (DWD)</option><option value="aicon">AICON (DWD, IA)</option></select>
         <label class="duelw" id="duelWrap"><input type="checkbox" id="duelChk"> Duello ICON / AICON</label>
         <div class="seg" id="layerSeg"><button data-l="radar">Radar</button><button data-l="temp" class="on">Temperatura</button><button data-l="precip">Pioggia</button><button data-l="wind">Vento</button><button data-l="pressure">Pressione</button><button data-l="sat">Satellite</button><button data-l="alert">Allerte</button></div>
       </div>
     </div>
-    <div class="mapwrap"><div id="map"></div><div class="mapmsg" id="mapMsg"></div>
+    <div class="mapwrap"><div id="map"></div><div class="mapmsg" id="mapMsg"></div><div class="maphint" id="mapHint">Usa due dita per spostare la mappa</div>
       <div class="duelbar" id="duelBar" style="display:none"><div class="dl"><span id="duelL">ICON</span></div><div class="dh" title="Trascina per confrontare">⇆</div><div class="dr"><span id="duelR">AICON (IA)</span></div></div></div>
     <div class="mapctl">
       <button class="playbtn" id="mapPlay" aria-label="Avvia animazione">▶</button>
@@ -1520,7 +1567,14 @@ const MAPV = { basemap:(['esri','street','sat','topo'].includes(store.get('conse
 
 function initMap(){
   if(typeof L === 'undefined' || MAPV.map) return;
-  MAPV.map = L.map('map', {zoomControl:true, worldCopyJump:true, minZoom:3, maxZoom:11}).setView([S.loc.lat, S.loc.lon], 6);
+  const coarse = matchMedia('(pointer: coarse)').matches;
+  MAPV.map = L.map('map', {zoomControl:true, worldCopyJump:true, minZoom:3, maxZoom:11, dragging:!coarse, tap:false}).setView([S.loc.lat, S.loc.lon], 6);
+  if(coarse){
+    const el = $('map'), hint = $('mapHint'); let tm;
+    el.addEventListener('touchstart', e => { if(e.touches.length >= 2){ MAPV.map.dragging.enable(); hint.classList.remove('on'); } }, {passive:true});
+    el.addEventListener('touchmove', e => { if(e.touches.length === 1 && !MAPV.map.dragging.enabled()){ hint.classList.add('on'); clearTimeout(tm); tm = setTimeout(()=>hint.classList.remove('on'), 1200); } }, {passive:true});
+    el.addEventListener('touchend', e => { if(e.touches.length === 0) setTimeout(()=>MAPV.map.dragging.disable(), 50); }, {passive:true});
+  }
   MAPV.map.createPane('labels'); MAPV.map.getPane('labels').style.zIndex = 450; MAPV.map.getPane('labels').style.pointerEvents = 'none';
   setBasemap();
   initDuel();
@@ -2032,7 +2086,8 @@ function renderMeteogram(){
   $('meteoCard').style.display='';
   chartDefaults();
   const n0 = nowIndex(hc.time), n1 = Math.min(hc.time.length, n0+72), sl = a => a.slice(n0, n1), T = sl(hc.time);
-  const labels = T.map(t => { const h = hh(t); return h===0 ? cap(dayName(dayOf(t))) : (h%3===0 ? t.slice(11,13) : ''); });
+  const narrow = innerWidth < 640;
+  const labels = T.map(t => { const h = hh(t); return h===0 ? cap(dayName(dayOf(t))) : narrow ? (h===12 ? '12' : '') : (h%3===0 ? t.slice(11,13) : ''); });
   const v = S.mv || 'tp'; let ds, scales;
   if(v === 'tp'){
     ds = [
@@ -2189,7 +2244,7 @@ function initDuel(){
   MAPV.map.on('move zoom resize', updateClip);
   const bar = $('duelBar'), wrap = $('map');
   const drag = e => { const r = wrap.getBoundingClientRect(); const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left; MAPV.ratio = Math.max(0.05, Math.min(0.95, x/r.width)); updateClip(); };
-  const stop = () => { document.removeEventListener('pointermove', drag); document.removeEventListener('pointerup', stop); MAPV.map.dragging.enable(); };
+  const stop = () => { document.removeEventListener('pointermove', drag); document.removeEventListener('pointerup', stop); if(!matchMedia('(pointer: coarse)').matches) MAPV.map.dragging.enable(); };
   bar.querySelector('.dh').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); MAPV.map.dragging.disable(); document.addEventListener('pointermove', drag); document.addEventListener('pointerup', stop); });
   $('duelChk').onchange = e => { MAPV.duel = e.target.checked; stopPlay(); if(!MAPV.duel) clearDuel(); refreshMap(); };
 }
