@@ -1,7 +1,7 @@
 {
   "name": "Aether Meteo",
   "short_name": "Aether",
-  "description": "Il consenso dei modelli meteo: tutte le previsioni a confronto, con affidabilità, mappe e allerte.",
+  "description": "Tutti i modelli meteo in un'unica previsione: confronto, affidabilità, mappe e allerte.",
   "lang": "it",
   "start_url": "./",
   "scope": "./",

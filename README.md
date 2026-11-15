@@ -1,6 +1,6 @@
 # Aether Meteo
 
-Il consenso dei modelli meteo: tutte le previsioni a confronto, con indice di affidabilità, mappe, allerte e verifica storica.
+Tutti i modelli meteo in un'unica previsione: le previsioni a confronto, con indice di affidabilità, mappe, allerte e verifica storica.
 
 ## Contenuto della cartella
 

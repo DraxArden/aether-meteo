@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aether Meteo · il consenso dei modelli</title>
+<title>Aether Meteo · tutti i modelli in una previsione</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0d1117">
 <link rel="icon" href="icons/icon-192.png">
@@ -971,7 +971,7 @@ select.msel{height:34px;border-radius:8px;border:1px solid var(--border-2);backg
     <div class="hd"><h3>Prossime 72 ore</h3>
       <div class="seg" id="mvSeg"><button data-v="tp" class="on">Temperatura e pioggia</button><button data-v="w">Vento</button><button data-v="c">Nuvole</button></div></div>
     <div class="chartbox"><canvas id="meteoChart"></canvas></div>
-    <div class="note" style="margin-top:6px">Consenso ora per ora dei modelli; la fascia mostra la forchetta tra il modello più freddo e il più caldo. Le zone grigie sono le ore di buio.</div>
+    <div class="note" style="margin-top:6px">Sintesi ora per ora dei modelli; la fascia mostra la forchetta tra il modello più freddo e il più caldo. Le zone grigie sono le ore di buio.</div>
   </div>
 
   <div class="row">
@@ -1052,14 +1052,14 @@ select.msel{height:34px;border-radius:8px;border:1px solid var(--border-2);backg
   </div>
 
   <div class="card expert-only">
-    <div class="hd"><h3>Modelli</h3><span class="note">Disattiva un modello per escluderlo dal consenso</span></div>
+    <div class="hd"><h3>Modelli</h3><span class="note">Disattiva un modello per escluderlo dalla sintesi</span></div>
     <div class="scroll-x"><table id="mtable"></table></div>
   </div>
 
   <footer>
     Dati: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0), che rielabora i modelli dei servizi meteorologici nazionali (ECMWF, DWD, NOAA, Météo-France, ItaliaMeteo-ARPAE, UK Met Office e altri). Verifica storica rispetto alla rianalisi ERA5 (Copernicus).
     Allerte: bollettino di criticità della <a href="https://github.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica" target="_blank" rel="noopener">Protezione Civile</a> (CC BY 4.0). Mappe: DWD; radar: RainViewer.
-    <b>Versione 3</b> · 14 novembre 2026. Aether Meteo: il consenso è una media pesata in base all'errore recente di ogni modello in questa località. Prototipo, non per decisioni critiche.
+    <b>Versione 4</b> · 15 novembre 2026. Aether Meteo: la sintesi è una media pesata in base all'errore recente di ogni modello in questa località. Prototipo, non per decisioni critiche.
   </footer>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -1287,7 +1287,7 @@ function renderHero(){
   $('hTemp').textContent = fmt(c.tmax)+'°';
   $('hDesc').textContent = `min ${fmt(c.tmin)}° · ${c.wx.t.toLowerCase()}`;
   const near = c.values.filter(o => Math.abs(o.v - c.tmax) <= 1.5).length;
-  $('hAgree').textContent = c.values.length ? `${near} modelli su ${c.values.length} entro 1,5° dal consenso · pioggia prevista da ${c.nWet} su ${c.nModels}` : '';
+  $('hAgree').textContent = c.values.length ? `${near} modelli su ${c.values.length} entro 1,5° dalla sintesi · pioggia prevista da ${c.nWet} su ${c.nModels}` : '';
   renderMetrics(c);
   if(c.values.length){
     const lo = Math.min(...c.values.map(o=>o.v)), hi = Math.max(...c.values.map(o=>o.v));
@@ -1415,7 +1415,7 @@ function renderSpag(){
     {label:'_lo', data:lo, borderWidth:0, pointRadius:0, fill:false, tension:.35},
     {label:'_hi', data:hi, borderWidth:0, pointRadius:0, fill:'-1', backgroundColor:css('--band'), tension:.35},
     ...act.filter(m=>!S.hidden[m.id]).map(m => ({label:m.name, data:S.data[m.id][v], borderColor:m.color, backgroundColor:m.color, borderWidth:1.5, pointRadius:0, pointHoverRadius:4, tension:.35, spanGaps:false})),
-    {label:'Consenso', data:C.map(c=>c[consKey]), borderColor:css('--cons'), backgroundColor:css('--cons'), borderWidth:3, pointRadius:3, tension:.35},
+    {label:'Sintesi', data:C.map(c=>c[consKey]), borderColor:css('--cons'), backgroundColor:css('--cons'), borderWidth:3, pointRadius:3, tension:.35},
   ];
   if(spagChart) spagChart.destroy();
   spagChart = new Chart($('spag'), {type:'line', data:{labels, datasets:ds}, options:{
@@ -1424,7 +1424,7 @@ function renderSpag(){
       callbacks:{label:i=>` ${i.dataset.label}: ${i.parsed.y==null?'—':i.parsed.y.toFixed(1).replace('.',',')}${unit}`}}},
     scales:{x:{grid:{display:false}}, y:{beginAtZero: v==='precip'||v==='wind', ticks:{callback:x=>x+unit}}}
   }});
-  $('legend').innerHTML = `<span><i style="background:var(--cons);height:4px"></i>Consenso</span>` + act.map(m=>`<span data-id="${m.id}" class="${S.hidden[m.id]?'off':''}"><i style="background:${m.color}"></i>${m.name}</span>`).join('');
+  $('legend').innerHTML = `<span><i style="background:var(--cons);height:4px"></i>Sintesi</span>` + act.map(m=>`<span data-id="${m.id}" class="${S.hidden[m.id]?'off':''}"><i style="background:${m.color}"></i>${m.name}</span>`).join('');
   $('legend').querySelectorAll('[data-id]').forEach(el => el.onclick = () => { S.hidden[el.dataset.id] = !S.hidden[el.dataset.id]; renderSpag(); });
 }
 
