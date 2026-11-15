@@ -1,6 +1,6 @@
 # Aether Meteo
 
-Tutti i modelli meteo in un'unica previsione: le previsioni a confronto, con indice di affidabilità, mappe, allerte e verifica storica.
+Il confronto dei modelli meteo: tutte le previsioni insieme, con indice di affidabilità, mappe, allerte e verifica storica.
 
 ## Contenuto della cartella
 
