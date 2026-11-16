@@ -172,6 +172,7 @@ body.simple .expert-only{display:none!important}
 .nowBars .nb i{display:block;width:100%;border-radius:3px 3px 0 0;background:var(--rain);transition:height .8s cubic-bezier(.2,.8,.2,1)}
 .nowAxis{display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-top:3px}
 .nowL{font-size:13px;color:var(--text-2);margin-top:6px;line-height:1.4}
+.nowUpd{display:block;font-size:11.5px;color:var(--text-3);margin-top:2px}
 .day .tr0{font-size:11px;min-height:16px;margin-top:2px;font-weight:500}
 .tw{color:#ea580c}.tc{color:#2563eb}.tr{color:var(--rain)}.td{color:var(--ok)}.tz{color:var(--text-3)}
 .acts{display:flex;flex-direction:column;gap:10px}
@@ -1059,7 +1060,7 @@ select.msel{height:34px;border-radius:8px;border:1px solid var(--border-2);backg
   <footer>
     Dati: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0), che rielabora i modelli dei servizi meteorologici nazionali (ECMWF, DWD, NOAA, Météo-France, ItaliaMeteo-ARPAE, UK Met Office e altri). Verifica storica rispetto alla rianalisi ERA5 (Copernicus).
     Allerte: bollettino di criticità della <a href="https://github.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica" target="_blank" rel="noopener">Protezione Civile</a> (CC BY 4.0). Mappe: DWD; radar: RainViewer.
-    <b>Versione 5</b> · 15 novembre 2026. Aether Meteo: il valore di confronto è una media pesata in base all'errore recente di ogni modello in questa località. Prototipo, non per decisioni critiche.
+    <b>Versione 6</b> · 16 novembre 2026. Aether Meteo: il valore di confronto è una media pesata in base all'errore recente di ogni modello in questa località. Prototipo, non per decisioni critiche.
   </footer>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -1154,6 +1155,7 @@ async function loadAll(loc){
     return startDemo(loc);
   }
   S.ens = await en;
+  S.loadedAt = Date.now();
   render();
   hideLoading();
   mapOnLocation();
@@ -1842,6 +1844,7 @@ async function loadExtras(loc){
   const base = `latitude=${loc.lat}&longitude=${loc.lon}&timezone=auto`;
   const j = await getJSON(`https://api.open-meteo.com/v1/forecast?${base}&minutely_15=precipitation&forecast_minutely_15=12&past_days=1&forecast_days=3&hourly=temperature_2m,precipitation&daily=sunrise,sunset,temperature_2m_max,precipitation_sum`);
   S.now = j.minutely_15 ? {time:j.minutely_15.time, p:j.minutely_15.precipitation} : null;
+  S.nowAt = Date.now();
   S.sun = {}; (j.daily?.time||[]).forEach((d,i) => S.sun[d] = {rise:j.daily.sunrise[i], set:j.daily.sunset[i]});
   const yd = j.daily?.time?.[0];
   if(yd){
@@ -1922,14 +1925,20 @@ async function loadOfficial(loc){
 
 /* ---------- summary text ---------- */
 const PART = h => h < 6 ? 'nella notte' : h < 12 ? 'in mattinata' : h < 18 ? 'nel pomeriggio' : 'in serata';
-function nowcastText(){
+function nowSlots(){
   if(!S.now) return null;
-  const p = S.now.p.map(v => v ?? 0), n = new Date();
+  const cut = Date.now() - 15*60000, idx = S.now.time.map((t,i)=>i).filter(i => new Date(S.now.time[i]).getTime() > cut);
+  if(idx.length < 4) return null;
+  return {time:idx.map(i=>S.now.time[i]), p:idx.map(i=>S.now.p[i])};
+}
+function nowcastText(){
+  const N = nowSlots(); if(!N) return null;
+  const p = N.p.map(v => v ?? 0), n = new Date();
   const first = p.findIndex(v => v >= 0.1);
   if(first < 0) return {txt:'Niente pioggia nelle prossime 2 ore.', rain:false};
   const rate = Math.max(...p) * 4, kind = rate < 1 ? 'debole' : rate < 4 ? 'moderata' : 'forte';
   if(first === 0){ const stop = p.findIndex(v => v < 0.1); return {txt: stop > 0 ? `Pioggia ${kind} in corso, dovrebbe smettere tra circa ${minFmt(stop*15)}.` : `Pioggia ${kind} in corso per le prossime 2 ore.`, rain:true}; }
-  const t0 = new Date(S.now.time[first]); const mins = Math.max(5, Math.round((t0 - n)/60000/5)*5);
+  const t0 = new Date(N.time[first]); const mins = Math.max(5, Math.round((t0 - n)/60000/5)*5);
   return {txt:`Pioggia ${kind} in arrivo tra circa ${minFmt(mins)}.`, rain:true};
 }
 function rainWindowText(hc, day){
@@ -2062,11 +2071,12 @@ function renderSummary(){
   } else el.style.display = 'none';
   /* nowcast mini chart */
   const nb = $('nowBars');
-  if(S.now){
-    const p = S.now.p.map(v=>v??0), mx = Math.max(1, ...p.map(v=>v*4));
-    nb.innerHTML = p.map((v,i) => `<div class="nb" title="${S.now.time[i].slice(11,16)} · ${fmt(v*4,1)} mm/h"><i style="height:${Math.max(3, v*4/mx*100).toFixed(0)}%;${v<0.1?'background:var(--border-2)':''}"></i></div>`).join('');
-    $('nowLbl').textContent = nowcastText()?.txt || '';
-    $('nowAxis').innerHTML = `<span>ora</span><span>+1 h</span><span>+2 h</span>`;
+  const N = nowSlots();
+  if(N){
+    const p = N.p.map(v=>v??0), mx = Math.max(1, ...p.map(v=>v*4));
+    nb.innerHTML = p.map((v,i) => `<div class="nb" title="${N.time[i].slice(11,16)} · ${fmt(v*4,1)} mm/h"><i style="height:${Math.max(3, v*4/mx*100).toFixed(0)}%;${v<0.1?'background:var(--border-2)':''}"></i></div>`).join('');
+    $('nowLbl').innerHTML = (nowcastText()?.txt || '') + (S.nowAt ? ` <span class="nowUpd">Aggiornato alle ${new Date(S.nowAt).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>` : '');
+    $('nowAxis').innerHTML = `<span>${N.time[0].slice(11,16)}</span><span>+1 h</span><span>+${((p.length*15)/60).toString().replace('.',',')} h</span>`;
     $('nowBox').style.display = '';
   } else $('nowBox').style.display = 'none';
 }
@@ -2292,6 +2302,15 @@ async function showAlertLayer(){
     navigator.serviceWorker.addEventListener('controllerchange', () => { if(hadController && !reloaded){ reloaded = true; location.reload(); } });
   }
   window.addEventListener('online', () => { if(S.offline) loadAll(S.loc); });
+  const refreshNow = () => { if(S.demo || S.offline || !S.loc) return; const loc = S.loc; loadExtras(loc).then(() => { if(S.loc === loc) renderSummary(); }).catch(()=>{}); };
+  setInterval(() => { if(document.visibilityState === 'visible') refreshNow(); }, 10*60000);
+  setInterval(() => { if(document.visibilityState === 'visible' && C) renderSummary(); }, 60000);
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState !== 'visible' || S.demo || !S.loc) return;
+    if(S.loadedAt && Date.now() - S.loadedAt > 30*60000) loadAll(S.loc);
+    else if(!S.nowAt || Date.now() - S.nowAt > 5*60000) refreshNow();
+  });
+  window.addEventListener('pageshow', e => { if(e.persisted && S.loc && !S.demo){ if(Date.now() - (S.loadedAt||0) > 30*60000) loadAll(S.loc); else refreshNow(); } });
   if(new Date().getHours() >= 18){ S.actDay = 1; document.querySelectorAll('#actSeg button').forEach(x=>x.classList.toggle('on', x.dataset.d==='1')); }
   if(location.hash === '#demo') { $('place').textContent = loc.name; S.loc = loc; startDemo(loc); }
   else loadAll(loc);
